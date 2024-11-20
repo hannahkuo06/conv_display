@@ -1,5 +1,4 @@
 import ast
-import json
 
 import streamlit as st
 import pandas as pd
@@ -33,14 +32,23 @@ if uploaded_file is not None:
 
         with info:
             st.subheader("info")
-            information = ast.literal_eval(df['info'][selected_row])
-            st.write(information)
+            try:
+                information = ast.literal_eval(df['info'][selected_row])
+                st.write(information)
+            except Exception as e:
+                st.write(f"Error displaying info: {e}")
+                st.write(df['info'][selected_row])
 
         with traj:
             st.subheader("traj")
+            convo_str = df['traj'][selected_row]
+
             try:
-                convo = ast.literal_eval(df['traj'][selected_row])
-                st.write(convo)
+                display = ast.literal_eval(convo_str)
+                st.write(display)
 
             except Exception as e:
-                st.write(f"Cannot display this record: {e}")
+                st.write(f"Cannot display this record cleanly. Will separate based on role: {e}")
+                pieces = convo_str.split("'role':")
+                st.write(pieces)
+
