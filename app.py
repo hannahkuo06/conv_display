@@ -1,37 +1,46 @@
 import ast
+import json
 
 import streamlit as st
 import pandas as pd
 
-st.title("Conversation Display")
+st.set_page_config(page_title="Conversation Display",
+                   layout="wide")
 
-# File uploader
 uploaded_file = st.file_uploader("Choose a file", type=["xlsx"])
-#
+
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file, engine='openpyxl')
 
     st.dataframe(df)
-    # Allow the user to select a column from the DataFrame
-    selected_column = st.selectbox('Select a column', df.columns)
-
-    # Allow the user to select a row (index) from the DataFrame
     selected_row = st.number_input('Select a row', min_value=0, max_value=len(df)-1, step=1)
 
-    reward, selected = st.columns([1, 2])
-
-    if selected_column and selected_row is not None:
-        with selected:
-            st.write(f"**{selected_column}**")
-            cell_value = df.loc[selected_row, selected_column]
-
-            if selected_column == "traj" or selected_column == "info":
-                try:
-                    convo = ast.literal_eval(cell_value)
-                    st.write(convo)
-                except Exception as e:
-                    st.write(f"Cannot display this record: {e}")
-
+    if selected_row is not None:
+        task_id, reward, trial = st.columns(3)
+        with task_id:
+            st.write("**task_id**")
+            st.write(df["task_id"][selected_row])
         with reward:
             st.write("**reward**")
             st.write(df["reward"][selected_row])
+        with trial:
+            st.write("**trial**")
+            st.write(df["trial"][selected_row])
+
+        cell_value = df.loc[selected_row, "traj"]
+
+        info, traj = st.columns([1, 2])
+
+        with info:
+            st.subheader("info")
+            information = ast.literal_eval(df['info'][selected_row])
+            st.write(information)
+
+        with traj:
+            st.subheader("traj")
+            try:
+                convo = ast.literal_eval(df['traj'][selected_row])
+                st.write(convo)
+
+            except Exception as e:
+                st.write(f"Cannot display this record: {e}")
